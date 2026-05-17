@@ -13,7 +13,8 @@
   },
   "dependencies": {
     "@stellar-drive-signet/db": "workspace:*",
-    "@stellar-drive-signet/types": "workspace:*"
+    "@stellar-drive-signet/types": "workspace:*",
+    "@stellar/stellar-sdk": "^15.1.0"
   },
   "devDependencies": {
     "@types/node": "^20.16.0",

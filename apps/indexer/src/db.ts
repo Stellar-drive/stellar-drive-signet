@@ -1,6 +1,14 @@
-// TODO(stellar-drive-signet): instantiate and export a shared PrismaClient from @stellar-drive-signet/db
-// and provide helpers for upserting profiles, contracts, and snapshots.
+import { PrismaClient } from '@stellar-drive-signet/db';
+import { logger } from './logger.js';
 
-export function getDb(): never {
-  throw new Error('[indexer] db.ts is a stub — wire up @stellar-drive-signet/db in the next pass');
+export const prisma = new PrismaClient({ log: ['error'] });
+
+export async function connectDb(): Promise<void> {
+  await prisma.$connect();
+  logger.info({}, 'db.connected');
+}
+
+export async function disconnectDb(): Promise<void> {
+  await prisma.$disconnect();
+  logger.info({}, 'db.disconnected');
 }
