@@ -143,3 +143,10 @@ set from the event stream.
 | `pnpm --filter @stellar-drive-signet/web typecheck` | Typecheck web app |
 | `pnpm db:up` / `db:down` | Start / stop local Postgres |
 | `pnpm db:migrate` | Run Prisma migrations |
+
+## License
+
+Signet is licensed under the Apache License 2.0 — see [`LICENSE`](LICENSE) for the
+full text. This covers every workspace package (`@stellar-drive-signet/sdk`, `@stellar-drive-signet/types`,
+`@stellar-drive-signet/ui`, `@stellar-drive-signet/db`, `@stellar-drive-signet/web`, `@stellar-drive-signet/indexer`) and the Soroban
+`identity-registry` contract.
