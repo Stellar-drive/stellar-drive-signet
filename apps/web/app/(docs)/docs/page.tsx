@@ -77,7 +77,7 @@ export default function DocsPage() {
         >
 {`import { SignetClient } from '@stellar-drive-signet/sdk';
 
-const stellar-drive-signet = new SignetClient({ baseUrl: 'https://stellar-drive-signet.dev' });
+const stellar-drive-signet = new SignetClient({ baseUrl: 'https://your-deployment.example' });
 const profile = await stellar-drive-signet.getProfile('aquawolf');
 // → { handle, profile, stats: { invocations, uniqueFunctions } }`}
         </pre>
