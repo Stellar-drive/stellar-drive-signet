@@ -169,7 +169,6 @@ set from the event stream.
 | `packages/db` | Prisma schema + generated client |
 | `packages/sdk` | External SDK for integrators |
 | `packages/types` | Shared TypeScript types |
-| `packages/ui` | Shared React components |
 | `infra` | Local dev infra (Docker Postgres) |
 
 ## Scripts
@@ -189,7 +188,7 @@ set from the event stream.
 
 | Suite | Count |
 |-------|-------|
-| `pnpm test` | **208** — `@stellar-drive-signet/web` 137 · `@stellar-drive-signet/indexer` 36 · `@stellar-drive-signet/sdk` 26 · `@stellar-drive-signet/types` 9 (`ui`, `db` have no tests yet) |
+| `pnpm test` | **208** — `@stellar-drive-signet/web` 137 · `@stellar-drive-signet/indexer` 36 · `@stellar-drive-signet/sdk` 26 · `@stellar-drive-signet/types` 9 (`db` has no tests yet) |
 | `cargo test` | **30** — `packages/contracts/identity-registry` |
 
 Both are CI gates ([`ci.yml`](.github/workflows/ci.yml)), alongside `lint`,
@@ -199,5 +198,5 @@ Both are CI gates ([`ci.yml`](.github/workflows/ci.yml)), alongside `lint`,
 
 Signet is licensed under the Apache License 2.0 — see [`LICENSE`](LICENSE) for the
 full text. This covers every workspace package (`@stellar-drive-signet/sdk`, `@stellar-drive-signet/types`,
-`@stellar-drive-signet/ui`, `@stellar-drive-signet/db`, `@stellar-drive-signet/web`, `@stellar-drive-signet/indexer`) and the Soroban
+`@stellar-drive-signet/db`, `@stellar-drive-signet/web`, `@stellar-drive-signet/indexer`) and the Soroban
 `identity-registry` contract.
