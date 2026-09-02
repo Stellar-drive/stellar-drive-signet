@@ -39,6 +39,8 @@ export const LIMITS = {
   cliPairStart: 12,
   /** Verifies an ed25519 signature per call, like `sep10`. */
   cliPairComplete: 12,
+  /** Builds/verifies a CLI-link challenge — same signing cost as `sep10`. */
+  cliLink: 12,
   /** Verifies a signature per call. */
   authVerify: 15,
   /** Cheap, but the entry point to the sign-in flow. */
