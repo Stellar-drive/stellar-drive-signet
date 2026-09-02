@@ -77,6 +77,7 @@ instance) over its HTTP API.`,
 	root.SetVersionTemplate("stellar-drive-signet version {{.Version}}\n")
 
 	root.AddCommand(newLinkCmd())
+	root.AddCommand(newIdentityCmd())
 
 	return root
 }
