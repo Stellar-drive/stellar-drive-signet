@@ -44,6 +44,7 @@ export type Profile = {
   bio: string;
   joined: string;
   source: ProfileSource;
+  archived?: boolean;
 };
 
 export type Operation = {
@@ -363,6 +364,20 @@ export async function safeChainProfile(handle: string): Promise<Profile | null> 
       .build();
 
     const sim = await server.simulateTransaction(tx);
+    // An archived persistent entry simulates "as if" it were present and
+    // reports what must be restored in `restorePreamble`. `isSimulationRestore`
+    // is the SDK's own guard for that and additionally requires the preamble to
+    // carry `transactionData` — a preamble without it names nothing to restore.
+    if (rpc.Api.isSimulationRestore(sim)) {
+      return {
+        name: handle,
+        wallet: '',
+        bio: '',
+        joined: '',
+        source: 'chain',
+        archived: true,
+      };
+    }
     if (rpc.Api.isSimulationError(sim) || !sim.result) return null;
 
     const wallet = decodeResolvedAddress(scValToNative(sim.result.retval));
