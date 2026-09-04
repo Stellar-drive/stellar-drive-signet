@@ -1,0 +1,37 @@
+# Global default fallback owner
+* @Stellar-drive
+
+# Smart Contracts (Soroban Rust contracts)
+/packages/contracts/ @Stellar-drive
+
+# Web Application (Next.js App Router & Marketing)
+/apps/web/ @Stellar-drive
+
+# Indexer Service (Horizon ingestion & attestation worker)
+/apps/indexer/ @Stellar-drive
+
+# stellar-drive-signet CLI (Go module, standalone — not part of the pnpm workspace)
+/cli/ @Stellar-drive
+
+# Database Schema & Client (Prisma)
+/packages/db/ @Stellar-drive
+
+# SDK & Client Libraries
+/packages/sdk/ @Stellar-drive
+
+# Shared Types
+/packages/types/ @Stellar-drive
+
+# Auth & Security
+/apps/web/lib/auth* @Stellar-drive
+/apps/web/app/api/auth/ @Stellar-drive
+/SECURITY.md @Stellar-drive
+
+# Infrastructure, CI/CD & Tooling Scripts
+/.github/ @Stellar-drive
+/infra/ @Stellar-drive
+/scripts/ @Stellar-drive
+
+# Documentation
+/docs/ @Stellar-drive
+/*.md @Stellar-drive

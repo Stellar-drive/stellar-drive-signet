@@ -1,0 +1,20 @@
+{
+  "name": "@stellar-drive-signet/cli-darwin-arm64",
+  "version": "0.0.0",
+  "description": "stellar-drive-signet CLI prebuilt binary for macOS/arm64 (Apple Silicon) — not for direct use, see @stellar-drive-signet/cli",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Stellar-drive/stellar-drive-signet.git",
+    "directory": "cli"
+  },
+  "os": [
+    "darwin"
+  ],
+  "cpu": [
+    "arm64"
+  ],
+  "files": [
+    "bin"
+  ]
+}

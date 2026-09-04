@@ -1,0 +1,42 @@
+{
+  "name": "@stellar-drive-signet/cli",
+  "version": "0.0.0",
+  "description": "stellar-drive-signet — link wallets and manage identity on the Signet developer identity registry (Stellar/Soroban)",
+  "license": "Apache-2.0",
+  "keywords": [
+    "stellar-drive-signet",
+    "stellar",
+    "soroban",
+    "cli"
+  ],
+  "homepage": "https://github.com/Stellar-drive/stellar-drive-signet/tree/main/cli#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Stellar-drive/stellar-drive-signet.git",
+    "directory": "cli"
+  },
+  "bin": {
+    "stellar-drive-signet": "bin/stellar-drive-signet.js"
+  },
+  "files": [
+    "bin"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "os": [
+    "linux",
+    "darwin",
+    "win32"
+  ],
+  "cpu": [
+    "x64",
+    "arm64"
+  ],
+  "optionalDependencies": {
+    "@stellar-drive-signet/cli-linux-x64": "0.0.0",
+    "@stellar-drive-signet/cli-linux-arm64": "0.0.0",
+    "@stellar-drive-signet/cli-darwin-arm64": "0.0.0",
+    "@stellar-drive-signet/cli-windows-x64": "0.0.0"
+  }
+}
