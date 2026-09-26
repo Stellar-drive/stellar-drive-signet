@@ -11,3 +11,6 @@
  */
 
 export const SPEC_READER_VERSION = '0.1.0';
+
+export * from './types.ts';
+export * from './errors.ts';
