@@ -9,6 +9,10 @@ import { runActivityWorker, type ActivityStore } from './workers/activity.js';
 import { runAttestationWorker } from './workers/attestation.js';
 import { runOperationsWorker, type OperationsStore } from './workers/operations.js';
 import { runPruningWorker, type PruningStore } from './workers/prune.js';
+import {
+  runExecutableRefreshWorker,
+  type ExecutableRefreshStore,
+} from './workers/executable-refresh.js';
 
 let shuttingDown = false;
 let shuttingDownPrisma = false;
@@ -80,6 +84,13 @@ async function tick(
   // Operations: pull recent Soroban invocations for tracked wallets
   const { opsUpserted } = await runOperationsWorker(horizon, prisma as unknown as OperationsStore);
 
+  // Executable refresh: backfill missing WASM hashes and detect on-chain contract upgrades
+  const { wasmChanged } = await runExecutableRefreshWorker(
+    soroban,
+    config,
+    prisma as unknown as ExecutableRefreshStore,
+  );
+
   // Pruning: periodically prune historical operations and snapshots beyond retention windows
   let opsPruned = 0;
   let snapshotsPruned = 0;
@@ -108,6 +119,7 @@ async function tick(
       contractsFound,
       opsUpserted,
       snapshotsWritten,
+      wasmChanged,
       opsPruned,
       snapshotsPruned,
       durationMs: Date.now() - start,

@@ -38,7 +38,8 @@ is caught by the tick, logged as `tick.error`, and the loop continues.
 | 2 | **deployment** | Every tick | Horizon `/accounts/{pubkey}/operations` for every `Wallet` row — paginated backward from `Wallet.deploymentCursor` (50/page, up to 10 pages/tick) until fully backfilled, then paginated forward from `Wallet.deploymentWatermark` — plus a transaction fetch per contract-creation op | `Contract`, `Wallet.deploymentCursor`/`deploymentBackfilledAt`/`deploymentWatermark`, clears `Wallet.indexRequestedAt` |
 | 3 | **activity** | Every tick | Horizon `/accounts/{contract}/transactions` for every `Contract` whose newest snapshot is older than 5 min | `ContractSnapshot` |
 | 4 | **operations** | Every tick | Horizon `/accounts/{pubkey}/operations` for every `Wallet` (50 most recent, desc) | `Operation` |
-| 5 | **prune** | Periodic (`INDEXER_PRUNE_INTERVAL_MS`, default 1h) | `Operation`, `ContractSnapshot` | Deletes historical records older than retention windows |
+| 5 | **executable-refresh** | Periodic (`INDEXER_EXECUTABLE_REFRESH_MS`, default 6h) | Soroban RPC `getLedgerEntries` for contracts where `wasmHashCheckedAt` is null or older than the refresh interval (batched, at most 100 keys per call) | `Contract.wasmHash`, `Contract.wasmHashCheckedAt`, `ContractWasmVersion` |
+| 6 | **prune** | Periodic (`INDEXER_PRUNE_INTERVAL_MS`, default 1h) | `Operation`, `ContractSnapshot` | Deletes historical records older than retention windows |
 
 Notes that matter in production:
 
@@ -66,6 +67,15 @@ data   = address(wallet)
 Anything else is skipped silently. See the
 [identity-registry README](../packages/contracts/identity-registry/README.md) for the
 contract's own method and event reference.
+
+### Executable refresh and upgrade detection
+
+The **executable-refresh** worker ensures contracts have their current WASM hash populated and detects code upgrades over time:
+
+- On each tick, it queries `Contract` rows where `wasmHashCheckedAt` is `null` (backfill) or older than `INDEXER_EXECUTABLE_REFRESH_MS` (default 6h).
+- Instance keys are batched in calls to Soroban RPC `getLedgerEntries` with at most 100 keys per request.
+- When an updated WASM hash is detected, it logs `deployments.wasmChanged` (`{ contract, from, to }`), updates `Contract.wasmHash`, and upserts a `ContractWasmVersion` history row (`observedLedger` records the RPC tip when the hash was noticed).
+- When an instance is archived or missing from the RPC, the previous hash is preserved and `wasmHashCheckedAt` is bumped so the worker does not get stuck in a tight retry loop.
 
 ---
 

@@ -24,6 +24,8 @@ export interface IndexerConfig {
   snapshotsRetentionDays: number;
   /** Interval in ms between background pruning passes (default: 3600000 = 1 hour). */
   pruneIntervalMs: number;
+  /** Interval in ms between executable refresh passes (default: 21600000 = 6 hours). */
+  executableRefreshIntervalMs: number;
 }
 
 export function loadConfig(): IndexerConfig {
@@ -66,5 +68,6 @@ export function loadConfig(): IndexerConfig {
     operationsRetentionDays: Number(process.env.INDEXER_OPERATIONS_RETENTION_DAYS ?? 90),
     snapshotsRetentionDays: Number(process.env.INDEXER_SNAPSHOTS_RETENTION_DAYS ?? 30),
     pruneIntervalMs: Number(process.env.INDEXER_PRUNE_INTERVAL_MS ?? 3_600_000),
+    executableRefreshIntervalMs: Number(process.env.INDEXER_EXECUTABLE_REFRESH_MS ?? 21_600_000),
   };
 }
