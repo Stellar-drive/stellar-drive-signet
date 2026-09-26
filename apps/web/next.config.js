@@ -16,7 +16,7 @@ const nextConfig = {
   poweredByHeader: false,
   // Workspace packages are consumed as TypeScript source, so Next must
   // transpile them.
-  transpilePackages: ['@stellar-drive-signet/types', '@stellar-drive-signet/sdk', '@stellar-drive-signet/db'],
+  transpilePackages: ['@stellar-drive-signet/types', '@stellar-drive-signet/sdk', '@stellar-drive-signet/db', '@stellar-drive-signet/spec'],
   async headers() {
     return [{ source: '/:path*', headers: securityHeaders }];
   },
