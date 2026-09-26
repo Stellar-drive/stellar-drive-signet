@@ -4,7 +4,6 @@ import { logger, setLogLevel } from './logger.js';
 import { connectDb, disconnectDb, prisma } from './db.js';
 import { createHorizonServer, sleep } from './stellar.js';
 import { createSorobanRpcServer } from './soroban-rpc.js';
-import { runSeedWorker } from './workers/seed.js';
 import { runDeploymentWorker, type DeploymentStore } from './workers/deployment.js';
 import { runActivityWorker, type ActivityStore } from './workers/activity.js';
 import { runAttestationWorker } from './workers/attestation.js';
@@ -136,13 +135,6 @@ async function main(): Promise<void> {
 
   const horizon = createHorizonServer(config.horizonUrl);
   const soroban = createSorobanRpcServer(config.rpcUrl);
-
-  // Check if we need to seed
-  const cursor = await prisma.indexerCursor.findUnique({ where: { id: 'main' } });
-  if (!cursor || config.reseed) {
-    logger.info({ reseed: config.reseed }, 'indexer.seeding');
-    await runSeedWorker();
-  }
 
   // Graceful shutdown
   function onSignal(signal: string) {

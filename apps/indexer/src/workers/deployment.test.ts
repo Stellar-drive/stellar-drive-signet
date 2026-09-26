@@ -12,7 +12,7 @@ const CONFIG = { network: 'testnet' } as Parameters<typeof runDeploymentWorker>[
 
 const WALLET_A: DeploymentWallet = {
   id: 'w1',
-  pubkey: 'GASAAEJC6P5UZGRLYJ2I2KYLR7RXGF44JZXDYGCFBN7T5VIHECUUEMCD',
+  pubkey: 'GBNTPIH54YJW4SFUIF2L7PBARVQZVSRKVE72OKN5IZC2CXMAEQI3VWCA',
   deploymentCursor: null,
   deploymentBackfilledAt: null,
   deploymentWatermark: null,
@@ -262,7 +262,7 @@ test('a Horizon failure on one wallet does not abort the others', async () => {
   const walletB: DeploymentWallet = {
     ...WALLET_A,
     id: 'w2',
-    pubkey: 'GBVBJEP2BSKHW6YBFCZR2HJKHZDLJOU7ZKTH2HSNUUQY322RWLURH3EQ',
+    pubkey: 'GBG6TF65YTASL6EDHCZSPRZC3V5XVKR4PNXSGC2LSFR22JL26SZM6L2R',
   };
   const wallets = [{ ...WALLET_A }, walletB];
   const { store } = memoryStore(wallets);
@@ -352,7 +352,7 @@ test('the same contract reached from two wallets is recorded once, attributed to
   const walletB: DeploymentWallet = {
     ...WALLET_A,
     id: 'w2',
-    pubkey: 'GBVBJEP2BSKHW6YBFCZR2HJKHZDLJOU7ZKTH2HSNUUQY322RWLURH3EQ',
+    pubkey: 'GBG6TF65YTASL6EDHCZSPRZC3V5XVKR4PNXSGC2LSFR22JL26SZM6L2R',
   };
   const wallets = [{ ...WALLET_A }, walletB];
   const { store, contracts } = memoryStore(wallets);
@@ -378,7 +378,7 @@ test('two different contracts from two wallets are each recorded to their own wa
   const walletB: DeploymentWallet = {
     ...WALLET_A,
     id: 'w2',
-    pubkey: 'GBVBJEP2BSKHW6YBFCZR2HJKHZDLJOU7ZKTH2HSNUUQY322RWLURH3EQ',
+    pubkey: 'GBG6TF65YTASL6EDHCZSPRZC3V5XVKR4PNXSGC2LSFR22JL26SZM6L2R',
   };
   const wallets = [{ ...WALLET_A }, walletB];
   const { store, contracts } = memoryStore(wallets);
@@ -449,7 +449,7 @@ test('a wallet linked between cycles is scanned on the next run, without a resta
   wallets.push({
     ...WALLET_A,
     id: 'w2',
-    pubkey: 'GBVBJEP2BSKHW6YBFCZR2HJKHZDLJOU7ZKTH2HSNUUQY322RWLURH3EQ',
+    pubkey: 'GBG6TF65YTASL6EDHCZSPRZC3V5XVKR4PNXSGC2LSFR22JL26SZM6L2R',
   });
 
   const second = await runDeploymentWorker(horizon, CONFIG, store);
@@ -457,7 +457,7 @@ test('a wallet linked between cycles is scanned on the next run, without a resta
   assert.deepEqual(scannedPubkeys, [
     WALLET_A.pubkey,
     WALLET_A.pubkey,
-    'GBVBJEP2BSKHW6YBFCZR2HJKHZDLJOU7ZKTH2HSNUUQY322RWLURH3EQ',
+    'GBG6TF65YTASL6EDHCZSPRZC3V5XVKR4PNXSGC2LSFR22JL26SZM6L2R',
   ]);
 });
 

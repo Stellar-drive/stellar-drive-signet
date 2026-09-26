@@ -104,8 +104,8 @@ model Contract {
   deployedAt      DateTime
   deployTxHash    String
   // No default on purpose: an implicit "mainnet" here is exactly how a
-  // testnet deployment (the only kind that exists today — see
-  // docs/DEMO_DATA.md) could get silently mislabeled. Every writer (today,
+  // testnet deployment (the only kind that exists today) could get silently
+  // mislabeled. Every writer (today,
   // only apps/indexer/src/workers/deployment.ts) must pass the indexer's
   // configured network explicitly.
   network         String

@@ -1,6 +1,4 @@
-import { promises as fs } from 'fs';
-import path from 'path';
-import { DEMO_PROFILES, isValidHandle } from '@stellar-drive-signet/types';
+import { isValidHandle } from '@stellar-drive-signet/types';
 import {
   ALLOW_HTTP,
   NETWORK_PASSPHRASE,
@@ -10,33 +8,28 @@ import {
 } from './chain.ts';
 
 /**
- * Single source of truth for profile data.
+ * Single source of truth for profile data. Only real data is ever served.
  *
- * `getProfile` resolves a handle through three layers, in order:
+ * `getProfile` resolves a handle through two layers, in order:
  *
  *   1. database — indexer-synced bindings, when a `DATABASE_URL` is configured
  *   2. chain    — a live `resolve(handle)` read against the Identity Registry
- *                 over Soroban RPC, when the contract is deployed
- *   3. static   — the curated demo personas, `DEMO_PROFILES` from
- *                 `@stellar-drive-signet/types`. That is the one shared source the indexer
- *                 seed (`apps/indexer/src/seed-data.ts`) also derives from, so
- *                 demo addresses live in exactly one place.
+ *                 over Soroban RPC, when the contract is configured
  *
  * The chain layer is what lets a handle claimed on-chain render at
- * `/p/{handle}` before (or without) the indexer syncing it into Postgres —
- * previously such a handle 404'd. Each layer degrades to the next rather than
- * throwing: no database, no deployed registry, or an unreachable RPC all fall
- * through, so the curated demo profiles keep working in every environment
- * (preview, prod, offline) with nothing provisioned at all.
+ * `/p/{handle}` before (or without) the indexer syncing it into Postgres.
+ * Each layer degrades to the next rather than throwing: no database, no
+ * configured registry, or an unreachable RPC all fall through. With neither
+ * layer available there is nothing to show, so every lookup misses and
+ * `/p/{handle}` renders its not-found page — there is no fallback data.
  */
 
 /**
- * Which of the three layers answered a lookup. Carried on the profile so the
- * UI can label provenance honestly: a handle bound on-chain must not be
- * presented with the curated manifest's "synthetic demo data" framing, and
- * curated data must never be presented as a real binding.
+ * Which layer answered a lookup. Carried on the profile so the UI can label
+ * provenance honestly: an indexed record and a live on-chain binding carry
+ * different amounts of off-chain detail.
  */
-export type ProfileSource = 'database' | 'chain' | 'demo';
+export type ProfileSource = 'database' | 'chain';
 
 export type Profile = {
   name: string;
@@ -66,30 +59,9 @@ export type Operation = {
   }>;
 };
 
-const DATA_DIR = path.join(process.cwd(), 'public/data');
-
-/**
- * The curated demo manifest, keyed by handle, built from the shared source in
- * `@stellar-drive-signet/types` so the indexer seed and the web app can never drift apart.
- */
-const DEMO_MANIFEST: Record<string, Profile> = Object.fromEntries(
-  DEMO_PROFILES.map((p) => [
-    p.handle,
-    { name: p.name, wallet: p.wallet, bio: p.bio, joined: p.joined, source: 'demo' as const },
-  ]),
-);
-
 // Handle rules live in @stellar-drive-signet/types, mirrored from the on-chain registry.
 // Re-exported here so existing callers keep importing it from this module.
 export { isValidHandle };
-
-async function readJson<T>(file: string): Promise<T | null> {
-  try {
-    return JSON.parse(await fs.readFile(path.join(DATA_DIR, file), 'utf-8')) as T;
-  } catch {
-    return null;
-  }
-}
 
 export async function getProfile(handle: string): Promise<Profile | null> {
   if (!isValidHandle(handle)) return null;
@@ -102,13 +74,11 @@ export async function getProfile(handle: string): Promise<Profile | null> {
   // A handle can be bound on-chain long before the indexer syncs it into the
   // database — or with no database at all. Ask the registry directly so it
   // renders instead of 404ing.
-  const fromChain = await safeChainProfile(handle);
-  if (fromChain) return fromChain;
-  return DEMO_MANIFEST[handle] ?? null;
+  return safeChainProfile(handle);
 }
 
 /** Which layer answered an operations lookup; `none` when nothing did. */
-export type OperationsSource = 'database' | 'horizon' | 'demo' | 'none';
+export type OperationsSource = 'database' | 'horizon' | 'none';
 
 /**
  * An operations lookup together with how complete it is.
@@ -172,12 +142,7 @@ export async function getOperationsResult(handle: string): Promise<OperationsRes
     }
   }
 
-  // 3. Static demo JSON (for the curated demo handles: aquawolf, sorobuilder, stellardev).
-  const data = await readJson<{ _embedded?: { records?: Operation[] } }>(`${handle}.json`);
-  const records = data?._embedded?.records ?? [];
-  if (records.length === 0) return empty;
-  // The curated files are the whole of what a demo persona ever did.
-  return { operations: records, source: 'demo', truncated: false, cap: null };
+  return empty;
 }
 
 /**
@@ -230,15 +195,11 @@ export function computeStats(operations: Operation[] | null | undefined): Profil
   return { invocations, uniqueFunctions, reputation: scoreOf(invocations, uniqueFunctions) };
 }
 
-export async function listHandles(): Promise<string[]> {
-  return Object.keys(DEMO_MANIFEST);
-}
-
 /**
- * Best-effort list of every handle bound in the database — curated-synced rows
- * plus self-sovereign on-chain attestations. Returns `[]` on any failure (no
- * `DATABASE_URL`, unreachable DB) so callers still build from the static
- * manifest alone. The DB client is imported lazily, like `safeDbProfile`.
+ * Best-effort list of every handle in the database (indexer-synced on-chain
+ * attestations). Returns `[]` on any failure (no `DATABASE_URL`, unreachable
+ * DB) so callers degrade to the chain layer alone. The DB client is imported
+ * lazily, like `safeDbProfile`.
  */
 export async function safeDbHandles(): Promise<string[]> {
   if (!process.env.DATABASE_URL) return [];
@@ -271,25 +232,26 @@ export async function safeChainHandles(): Promise<string[]> {
 }
 
 /**
- * Every public handle for surfaces like the sitemap and OG images: the curated
- * manifest unioned with the database and with live on-chain bindings,
- * de-duplicated. Mirrors `getProfile`'s three layers, so anything that renders
- * at `/p/{handle}` is also listed. Each source degrades to `[]` on its own, so
- * with nothing provisioned this is just the manifest.
+ * Every public handle for surfaces like the sitemap and OG images: the
+ * database unioned with live on-chain bindings, de-duplicated and sorted.
+ * Mirrors `getProfile`'s two layers, so anything that renders at
+ * `/p/{handle}` is also listed. Each source degrades to `[]` on its own, so
+ * with nothing provisioned this is empty.
  */
 export async function listAllHandles(): Promise<string[]> {
-  const [curated, fromDb, fromChain] = await Promise.all([
-    listHandles(),
-    safeDbHandles(),
-    safeChainHandles(),
-  ]);
-  return [...new Set([...curated, ...fromDb, ...fromChain])];
+  const [fromDb, fromChain] = await Promise.all([safeDbHandles(), safeChainHandles()]);
+  return [...new Set([...fromDb, ...fromChain])].sort((a, b) => a.localeCompare(b));
+}
+
+/** Alias of `listAllHandles`, kept for callers (tRPC `profile.list`) that use this name. */
+export async function listHandles(): Promise<string[]> {
+  return listAllHandles();
 }
 
 /**
  * Best-effort database lookup. Returns null on ANY failure — no `DATABASE_URL`,
  * unreachable DB, empty result — so callers degrade gracefully to the chain
- * and static layers instead of throwing a 500. The DB client is imported
+ * layer instead of throwing a 500. The DB client is imported
  * lazily so the web app
  * never hard-depends on Postgres being present.
  */
@@ -348,9 +310,9 @@ const SIMULATION_SOURCE = 'GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
  * the handle is bound, returns a minimal profile built from that binding.
  *
  * Returns null on ANY miss: registry not deployed, handle unbound, RPC
- * unreachable, malformed response. `getProfile` then falls through to the
- * static manifest rather than throwing a 500. The stellar-sdk is imported
- * lazily so the database and static paths never pay to load it.
+ * unreachable, malformed response. `getProfile` then reports a miss rather
+ * than throwing a 500. The stellar-sdk is imported lazily so the database
+ * path never pays to load it.
  *
  * Only the handle→wallet binding is authoritative on-chain; presentation
  * fields live off-chain, so `name` falls back to the handle and `bio` stays
@@ -437,8 +399,7 @@ export const DB_OPERATIONS_PER_WALLET = 100;
 /**
  * Best-effort lookup of indexer-populated operations for a handle, together
  * with the completeness of the read. Returns null on any failure (no DB,
- * unreachable, error) so `getOperationsResult` falls back to Horizon and then
- * the static JSON. Maps DB rows to the Horizon-shaped `Operation` the UI uses.
+ * unreachable, error) so `getOperationsResult` falls back to Horizon. Maps DB rows to the Horizon-shaped `Operation` the UI uses.
  *
  * Capped at 100 rows — this powers dashboard stats and OG images, which only
  * need a representative recent sample, not the full history. Callers that
@@ -491,7 +452,7 @@ export interface PagedOperations {
  *
  * Returns null when there's no database, the handle doesn't resolve to a
  * profile in it, or the query fails — callers fall back to `getOperations`
- * (Horizon / static demo JSON) in that case, same as `safeDbOperations`.
+ * (Horizon) in that case, same as `safeDbOperations`.
  */
 export async function getPagedOperations(
   handle: string,

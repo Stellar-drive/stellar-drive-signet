@@ -43,7 +43,7 @@ A well-formed handle: 1–32 chars of `[a-z0-9_-]`. Validated by `handleInput()`
   operations: Operation[];
   truncated: boolean;
   cap: number | null;
-  source: 'database' | 'horizon' | 'demo' | 'none';
+  source: 'database' | 'horizon' | 'none';
 } | null
 ```
 Profile fields: `name`, `wallet`, `bio`, `joined`. Stats: `invocations`, `uniqueFunctions`, `reputation` (0–100).

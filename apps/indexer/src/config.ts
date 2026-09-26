@@ -7,7 +7,6 @@ export interface IndexerConfig {
   rpcUrl: string;
   tickIntervalMs: number;
   logLevel: string;
-  reseed: boolean;
   /** Identity Registry contract id (C…). Empty until the contract is deployed. */
   registryContractId: string;
   /**
@@ -49,7 +48,6 @@ export function loadConfig(): IndexerConfig {
     rpcUrl,
     tickIntervalMs:  Number(process.env.INDEXER_TICK_INTERVAL_MS ?? 30_000),
     logLevel:        process.env.INDEXER_LOG_LEVEL        ?? 'info',
-    reseed:          process.argv.includes('--reseed'),
     registryContractId:
       process.env.INDEXER_REGISTRY_CONTRACT_ID ??
       process.env.NEXT_PUBLIC_IDENTITY_REGISTRY_ID ??

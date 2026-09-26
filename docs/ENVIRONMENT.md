@@ -18,7 +18,7 @@ Required means “must be set for that surface to do its job in production.” O
 
 | Variable | Consumed by | Required / optional | Default | Behaviour when unset |
 | --- | --- | --- | --- | --- |
-| `DATABASE_URL` | web, indexer | **Required** for indexer. **Optional** for web. | _(none)_ | **Web:** profile/activity loaders skip Postgres and use the static manifest (and chain resolve when configured) — demo `/p/*` keeps working. The `/handles` directory falls back to discovering handles from the registry's event stream, which a public RPC serves for only ~11h (`REGISTRY_EVENT_WINDOW_LEDGERS`), so handles claimed before that are not listed. `/api/health` reports `checks.db: "skipped"`. Dashboard account writes that need Prisma return empty. **CLI linking (`stellar-drive-signet link`/`unlink`) is unavailable and fails closed** — the whole flow ends in a `Wallet` row, so with nowhere to write one every pairing endpoint answers `503` and `/link` says so before the developer approves rather than accepting an approval that could persist nothing. Provisioning this in production is #191. **Indexer:** process refuses to start (`DATABASE_URL is required`). |
+| `DATABASE_URL` | web, indexer | **Required** for indexer. **Optional** for web. | _(none)_ | **Web:** profile/activity loaders skip Postgres and use a live chain `resolve` (when a registry is configured) and Horizon — `/p/*` keeps working for any handle bound on-chain, and is a 404 otherwise. The `/handles` directory falls back to discovering handles from the registry's event stream, which a public RPC serves for only ~11h (`REGISTRY_EVENT_WINDOW_LEDGERS`), so handles claimed before that are not listed. `/api/health` reports `checks.db: "skipped"`. Dashboard account writes that need Prisma return empty. **CLI linking (`stellar-drive-signet link`/`unlink`) is unavailable and fails closed** — the whole flow ends in a `Wallet` row, so with nowhere to write one every pairing endpoint answers `503` and `/link` says so before the developer approves rather than accepting an approval that could persist nothing. Provisioning this in production is #191. **Indexer:** process refuses to start (`DATABASE_URL is required`). |
 | `STELLAR_NETWORK` | _(declared for ops; not read by current TS)_ | Optional | `testnet` in `.env.example` | No runtime effect today. Prefer `NEXT_PUBLIC_STELLAR_NETWORK` (web) and `INDEXER_NETWORK` (indexer). Kept so deploy docs and local `.env` stay aligned. |
 | `STELLAR_HORIZON_URL` | _(declared for ops; not read by current TS)_ | Optional | `https://horizon-testnet.stellar.org` | No runtime effect today. Indexer reads `INDEXER_HORIZON_URL` instead (same default). |
 | `SOROBAN_RPC_URL` | web (server) | Optional | Falls through to `NEXT_PUBLIC_SOROBAN_RPC_URL`, then `https://soroban-testnet.stellar.org` | Server-side registry reads (`lib/chain.ts`, directory, profile chain resolve, and the `/api/health` registry check) use the public URL / testnet default. Client claim flow never sees this var (uses `NEXT_PUBLIC_SOROBAN_RPC_URL` only). |
@@ -79,7 +79,7 @@ Useful when running the indexer or hardening multi-instance web:
 
 ```bash
 cp .env.example .env
-# edit .env as needed — demo web routes need nothing beyond defaults
+# edit .env as needed — set NEXT_PUBLIC_IDENTITY_REGISTRY_ID to see real handles
 pnpm install
 pnpm --filter @stellar-drive-signet/web dev
 ```

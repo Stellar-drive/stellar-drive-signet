@@ -163,7 +163,7 @@ function docForOutput(path: string): string {
       '  operations: Operation[];\n' +
       '  truncated: boolean;\n' +
       '  cap: number | null;\n' +
-      "  source: 'database' | 'horizon' | 'demo' | 'none';\n" +
+      "  source: 'database' | 'horizon' | 'none';\n" +
       '} | null\n```\n' +
       'Profile fields: `name`, `wallet`, `bio`, `joined`. Stats: `invocations`, `uniqueFunctions`, `reputation` (0–100).\n\n' +
       'The operations window is bounded by the layer that answered (`source`). ' +
