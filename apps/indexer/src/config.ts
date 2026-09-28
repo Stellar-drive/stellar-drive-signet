@@ -22,6 +22,10 @@ export interface IndexerConfig {
   operationsRetentionDays: number;
   /** ContractSnapshot retention in days (default: 30; 0 to retain indefinitely). */
   snapshotsRetentionDays: number;
+  /** Whether to capture per-contract invocations (default: true). */
+  captureInvocations: boolean;
+  /** Maximum contract invocations retained per contract (default: 1000; 0 to retain indefinitely). */
+  invocationsMaxPerContract: number;
   /** Interval in ms between background pruning passes (default: 3600000 = 1 hour). */
   pruneIntervalMs: number;
   /** Interval in ms between executable refresh passes (default: 21600000 = 6 hours). */
@@ -85,6 +89,8 @@ export function loadConfig(): IndexerConfig {
     eventWindowLedgers: intEnv('INDEXER_EVENT_WINDOW_LEDGERS', 8_000, { min: 1 }),
     operationsRetentionDays: intEnv('INDEXER_OPERATIONS_RETENTION_DAYS', 90, { min: 0 }),
     snapshotsRetentionDays: intEnv('INDEXER_SNAPSHOTS_RETENTION_DAYS', 30, { min: 0 }),
+    captureInvocations: process.env.INDEXER_CAPTURE_INVOCATIONS !== 'false',
+    invocationsMaxPerContract: intEnv('INDEXER_INVOCATIONS_MAX_PER_CONTRACT', 1_000, { min: 1 }),
     pruneIntervalMs: intEnv('INDEXER_PRUNE_INTERVAL_MS', 3_600_000, { min: 60_000 }),
     executableRefreshIntervalMs: intEnv('INDEXER_EXECUTABLE_REFRESH_MS', 21_600_000, {
       min: 60_000,
