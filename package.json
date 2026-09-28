@@ -31,6 +31,7 @@
     "db:deploy": "pnpm --filter @stellar-drive-signet/db run migrate:deploy",
     "db:generate": "pnpm --filter @stellar-drive-signet/db run generate",
     "indexer:dev": "pnpm --filter @stellar-drive-signet/indexer dev",
+    "dev:seed": "pnpm --filter @stellar-drive-signet/indexer run dev:seed",
     "docs:generate": "pnpm --filter @stellar-drive-signet/web run docs:generate"
   },
   "devDependencies": {
