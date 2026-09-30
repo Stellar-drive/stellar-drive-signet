@@ -16,6 +16,7 @@ import (
 	"github.com/Stellar-drive/stellar-drive-signet/cli/internal/keys"
 	"github.com/Stellar-drive/stellar-drive-signet/cli/internal/link"
 	"github.com/Stellar-drive/stellar-drive-signet/cli/internal/pair"
+	"github.com/Stellar-drive/stellar-drive-signet/cli/internal/redact"
 )
 
 // newUnlinkCmd is `stellar-drive-signet link` in reverse, and deliberately much shorter:
@@ -87,6 +88,8 @@ stellar CLI.`,
 			if err != nil {
 				return err
 			}
+			result.Wallet = redact.Secrets(result.Wallet)
+			result.Handle = redact.Secrets(result.Handle)
 
 			if jsonOutput {
 				return json.NewEncoder(cmd.OutOrStdout()).Encode(map[string]string{

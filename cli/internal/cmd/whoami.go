@@ -11,12 +11,13 @@ import (
 	"github.com/Stellar-drive/stellar-drive-signet/cli/internal/keys"
 	"github.com/Stellar-drive/stellar-drive-signet/cli/internal/link"
 	"github.com/Stellar-drive/stellar-drive-signet/cli/internal/pair"
+	"github.com/Stellar-drive/stellar-drive-signet/cli/internal/redact"
 )
 
-// whoamiResult is the --json shape. Note what is absent: nothing here can
-// carry a secret, because nothing in this command ever reads one — the public
-// key comes from `stellar keys address`, which is why `stellar-drive-signet identity` was
-// built that way in the first place.
+// whoamiResult is the --json shape. Every string is redacted before this value
+// is rendered: identity and deployment are user-controlled, while handle is
+// supplied by the deployment. The public key still comes from `stellar keys
+// address`, so stellar-drive-signet never needs to read key material itself.
 type whoamiResult struct {
 	Identity   string `json:"identity"`
 	PublicKey  string `json:"publicKey"`
@@ -74,10 +75,10 @@ which keeps key material out of stellar-drive-signet entirely.`,
 			}
 
 			result := whoamiResult{
-				Identity:   source,
-				PublicKey:  publicKey,
-				Deployment: resolved.BaseURL,
-				Handle:     identity.Handle,
+				Identity:   redact.Secrets(source),
+				PublicKey:  redact.Secrets(publicKey),
+				Deployment: redact.Secrets(resolved.BaseURL),
+				Handle:     redact.Secrets(identity.Handle),
 				Linked:     identity.Linked,
 			}
 
