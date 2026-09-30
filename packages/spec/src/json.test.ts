@@ -169,7 +169,8 @@ function decodeSpecEntries(entries: readonly xdr.ScSpecEntry[]): {
       };
       functions.push({
         name: str(fn.name()),
-        ...(optDoc(fn.doc()) !== undefined ? { doc: optDoc(fn.doc()) as string } : {}),
+        doc: fn.doc().toString(),
+        isConstructor: str(fn.name()) === '__constructor',
         inputs: fn.inputs().map(decodeField),
         outputs: fn.outputs().map(decodeTypeDef),
       });
@@ -246,6 +247,7 @@ function decodeSpecEntries(entries: readonly xdr.ScSpecEntry[]): {
       });
     } else if (arm === 'scSpecEntryUdtErrorEnumV0') {
       const er = value as unknown as {
+        name(): { toString(): string };
         doc(): { toString(): string };
         cases(): Array<{
           name(): { toString(): string };
@@ -254,11 +256,11 @@ function decodeSpecEntries(entries: readonly xdr.ScSpecEntry[]): {
         }>;
       };
       for (const c of er.cases()) {
-        const caseDoc = optDoc(c.doc());
         errors.push({
+          enumName: str(er.name()),
           name: str(c.name()),
           value: c.value(),
-          ...(caseDoc !== undefined ? { doc: caseDoc } : {}),
+          doc: c.doc().toString(),
         });
       }
     } else if (arm === 'scSpecEntryEventV0') {
@@ -403,6 +405,8 @@ function richSpec(): ContractSpec {
     functions: [
       {
         name: 'ping',
+        doc: '',
+        isConstructor: false,
         inputs: [
           { name: 'target', type: { type: 'vec', element: { type: 'option', value: 'u32' } } },
           { name: 'flags', type: { type: 'unknown', xdrArm: 'scSpecTypeFuture' } },
@@ -418,7 +422,7 @@ function richSpec(): ContractSpec {
         cases: [{ name: 'A', fields: [{ name: 'x', type: 'i64' }] }],
       },
     ],
-    errors: [{ enumName: 'E', name: 'Broke', value: 1 }],
+    errors: [{ enumName: 'E', name: 'Broke', value: 1, doc: '' }],
     events: [{ name: 'Ev', topics: [], data: [] }],
     build: { rustVersion: '1.91.1', sdkVersion: '26.1.0' },
     env: { protocolVersion: 25, preRelease: 0 },

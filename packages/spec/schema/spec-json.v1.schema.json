@@ -168,6 +168,7 @@
       "properties": {
         "name": { "type": "string" },
         "doc": { "type": "string" },
+        "isConstructor": { "type": "boolean" },
         "inputs": { "type": "array", "items": { "$ref": "#/definitions/specField" } },
         "outputs": { "type": "array", "items": { "$ref": "#/definitions/typeRef" } }
       }

@@ -100,7 +100,8 @@ function copyField(field: SpecField): SpecField {
 function copyFunction(fn: SpecFunction): SpecFunction {
   return {
     name: fn.name,
-    ...(fn.doc !== undefined ? { doc: fn.doc } : {}),
+    doc: fn.doc,
+    isConstructor: fn.isConstructor,
     inputs: fn.inputs.map(copyField),
     outputs: fn.outputs.map(copyTypeRef),
   };
@@ -156,10 +157,10 @@ export function toSpecJson(spec: ContractSpec, options: ToSpecJsonOptions = {}):
       }
     }),
     errors: spec.errors.map((e) => ({
-      ...(e.enumName !== undefined ? { enumName: e.enumName } : {}),
+      enumName: e.enumName,
       name: e.name,
       value: e.value,
-      ...(e.doc !== undefined ? { doc: e.doc } : {}),
+      doc: e.doc,
     })),
     events: spec.events.map((e) => ({
       name: e.name,
