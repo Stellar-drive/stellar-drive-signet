@@ -16,3 +16,6 @@ export * from './types.ts';
 export * from './errors.ts';
 export * from './type-ref.ts';
 export * from './cache/index.ts';
+export { parseContractSpec, CONTRACT_SPEC_SECTION } from './parse.ts';
+export { readCustomSections } from './wasm-sections.ts';
+export { STELLAR_SDK_VERSION } from './sdk-version.ts';
