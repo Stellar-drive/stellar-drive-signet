@@ -111,8 +111,9 @@ test('a constructor is kept in functions and flagged', () => {
 });
 
 test('an arm this converter does not know becomes an unknown TypeRef', () => {
-  assert.deepEqual(toTypeRef(xdr.ScSpecTypeDef.scSpecTypeMuxedAddress()), {
-    type: 'unknown',
-    xdrArm: 'scSpecTypeMuxedAddress',
-  });
+  // A future SDK arm, not a real one: muxed addresses are a primitive now.
+  const futureArm = {
+    switch: () => ({ name: 'scSpecTypeFutureArm' }),
+  } as unknown as xdr.ScSpecTypeDef;
+  assert.deepEqual(toTypeRef(futureArm), { type: 'unknown', xdrArm: 'scSpecTypeFutureArm' });
 });
