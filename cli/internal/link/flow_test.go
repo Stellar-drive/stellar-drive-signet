@@ -64,8 +64,8 @@ func baseDeps(status pair.Status) Deps {
 			return pair.Started{State: "p_1", PollToken: "tok", UserCode: "ABCD2345"}, nil
 		},
 		Poll:      func(context.Context, string) (pair.Status, error) { return status, nil },
-		Challenge: func(context.Context, string) (string, error) { return "UNSIGNED", nil },
-		Sign:      func(string) (string, error) { return "SIGNED", nil },
+		Challenge: func(context.Context, string) (string, string, error) { return "UNSIGNED", testPassphrase, nil },
+		Sign:      func(string, string) (string, error) { return "SIGNED", nil },
 		Complete:  func(context.Context, string, string, string) (string, bool, error) { return "alice", false, nil },
 		// Keep the suite fast: the real defaults are five minutes and two
 		// seconds, and nothing here is testing wall-clock behaviour.
@@ -250,7 +250,7 @@ func TestRun_CallbackWithTheWrongStateDoesNotFinishTheLink(t *testing.T) {
 
 func TestRun_RejectedApprovalExitsWithoutSigning(t *testing.T) {
 	deps := baseDeps(pair.StatusRejected)
-	deps.Sign = func(string) (string, error) {
+	deps.Sign = func(string, string) (string, error) {
 		t.Fatal("signed after the approval was refused")
 		return "", nil
 	}
@@ -318,7 +318,7 @@ func TestRun_FallsBackToPollingWhenTheLoopbackCannotBind(t *testing.T) {
 
 func TestRun_SigningFailureStopsBeforeComplete(t *testing.T) {
 	deps := baseDeps(pair.StatusApproved)
-	deps.Sign = func(string) (string, error) {
+	deps.Sign = func(string, string) (string, error) {
 		return "", errors.New("signing failed: identity not found")
 	}
 	deps.Complete = func(context.Context, string, string, string) (string, bool, error) {
@@ -330,6 +330,8 @@ func TestRun_SigningFailureStopsBeforeComplete(t *testing.T) {
 		t.Fatal("expected a signing error")
 	}
 }
+
+const testPassphrase = "Test SDF Network ; September 2015"
 
 func TestRun_RedactsSecretsFromApprovalOutputTimeoutAndResult(t *testing.T) {
 	seed := "SASAAEJC6P5UZGRLYJ2I2KYLR7RXGF44JZXDYGCFBN7T5VIHECUUEMCD"
@@ -381,7 +383,7 @@ func TestFetchChallenge_RedactsTheServersError(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	_, err := FetchChallenge(srv.Client(), srv.URL)(context.Background(), "GABC")
+	_, _, err := FetchChallenge(srv.Client(), srv.URL)(context.Background(), "GABC")
 	if !errors.Is(err, exitcode.ErrNetwork) {
 		t.Fatalf("err = %v, want ErrNetwork", err)
 	}
