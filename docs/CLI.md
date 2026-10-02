@@ -110,7 +110,7 @@ so stellar-drive-signet never holds one to print.
 
 ```bash
 stellar-drive-signet unlink            # asks first
-stellar-drive-signet unlink --yes      # for scripts
+stellar-drive-signet unlink --yes      # required when stdin is not a terminal (CI, pipes)
 ```
 
 Unlinking needs only the key proof — no browser step. Attaching a wallet makes
@@ -212,7 +212,7 @@ Stable, so scripts can branch on the code rather than on message text.
 | --- | --- |
 | `0` | Success |
 | `1` | Generic or unexpected error |
-| `2` | Invalid input — a malformed handle or public key |
+| `2` | Invalid input — a malformed handle or public key, or `unlink` run non-interactively without `--yes` |
 | `3` | Configuration — the config file, a flag or env var, the `stellar` CLI (missing or too old), or a deployment with no database |
 | `4` | No identity — `stellar` could not resolve the requested identity |
 | `5` | Signing failed |
