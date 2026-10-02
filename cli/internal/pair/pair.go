@@ -56,6 +56,10 @@ func New(baseURL string) *Client {
 type Started struct {
 	State     string `json:"state"`
 	PollToken string `json:"pollToken"`
+	// UserCode is the short code the terminal prints and the approval page
+	// displays (#596), so the developer can see they are approving their own
+	// link. It travels in the approval URL; the server stores only its hash.
+	UserCode  string `json:"userCode"`
 	ExpiresAt string `json:"expiresAt"`
 }
 

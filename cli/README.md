@@ -54,7 +54,9 @@ Attaches the wallet you deploy contracts from to your Signet handle.
 stellar-drive-signet link
 # Approve this link in your browser:
 #
-#     https://stellar-drive-signet.example/link?callback=…&code=…
+#     https://stellar-drive-signet.example/link?callback=…&code=…&user_code=…
+#
+# The approval page will show this code: ABCD2345
 #
 # Waiting for approval… 4m58s remaining
 # Approved. Proving control of the deploy key…

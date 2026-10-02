@@ -115,13 +115,19 @@ func Run(ctx context.Context, baseURL, network, source, publicKey string, deps D
 		return Result{}, err
 	}
 
-	approvalURL, server := prepare(baseURL, started.State, callbackState, deps, report)
+	approvalURL, server := prepare(baseURL, started, callbackState, deps, report)
 	if server != nil {
 		defer func() { _ = server.Close() }()
 	}
 
 	safeApprovalURL := redact.Secrets(approvalURL)
 	report(fmt.Sprintf("Approve this link in your browser:\n\n    %s\n", safeApprovalURL))
+	if started.UserCode != "" {
+		// The same code the approval page shows (#596). Printed so the
+		// developer has something concrete to compare — a page showing a
+		// different code is somebody else's link, not theirs.
+		report(fmt.Sprintf("The approval page will show this code: %s\n", started.UserCode))
+	}
 	if deps.OpenBrowser != nil {
 		if err := deps.OpenBrowser(approvalURL); err != nil {
 			report("Could not open a browser automatically — open the link above yourself.")
@@ -172,8 +178,14 @@ func Run(ctx context.Context, baseURL, network, source, publicKey string, deps D
 // prepare builds the approval URL, attaching the loopback callback when one
 // could be bound. A loopback that cannot start is not an error: the polling
 // path covers it, and the URL simply carries no callback.
-func prepare(baseURL, state, callbackState string, deps Deps, report func(string)) (string, Callbacks) {
-	query := url.Values{"code": {state}}
+func prepare(baseURL string, started pair.Started, callbackState string, deps Deps, report func(string)) (string, Callbacks) {
+	query := url.Values{"code": {started.State}}
+	if started.UserCode != "" {
+		// /link verifies this against the hash stored at `start` before it
+		// renders an Approve button (#596). Omitted when an older server
+		// returned none, so the URL stays valid against it.
+		query.Set("user_code", started.UserCode)
+	}
 
 	var server Callbacks
 	if deps.Listen != nil {

@@ -61,7 +61,7 @@ func (f *fakeCallbacks) WaitFor(ctx context.Context, _ time.Duration, accept loo
 func baseDeps(status pair.Status) Deps {
 	return Deps{
 		Start: func(context.Context, string, string) (pair.Started, error) {
-			return pair.Started{State: "p_1", PollToken: "tok"}, nil
+			return pair.Started{State: "p_1", PollToken: "tok", UserCode: "ABCD2345"}, nil
 		},
 		Poll:      func(context.Context, string) (pair.Status, error) { return status, nil },
 		Challenge: func(context.Context, string) (string, error) { return "UNSIGNED", nil },
@@ -127,6 +127,11 @@ func TestRun_PutsTheCodeAndCallbackStateInTheApprovalURL(t *testing.T) {
 	if q.Get("code") != "p_1" {
 		t.Fatalf("code = %q", q.Get("code"))
 	}
+	// #596: /link verifies this against the hash stored at `start` before it
+	// renders an Approve button, so the URL must carry it.
+	if q.Get("user_code") != "ABCD2345" {
+		t.Fatalf("user_code = %q", q.Get("user_code"))
+	}
 	if q.Get("callback") != cb.url {
 		t.Fatalf("callback = %q", q.Get("callback"))
 	}
@@ -135,6 +140,51 @@ func TestRun_PutsTheCodeAndCallbackStateInTheApprovalURL(t *testing.T) {
 	}
 	if !cb.closed {
 		t.Fatal("loopback server was not closed")
+	}
+}
+
+func TestRun_PrintsTheUserCodeNextToTheURL(t *testing.T) {
+	deps := baseDeps(pair.StatusApproved)
+
+	var lines []string
+	deps.Report = func(line string) { lines = append(lines, line) }
+
+	if _, err := Run(context.Background(), "https://stellar-drive-signet.example", "testnet", "src", "GABC", deps); err != nil {
+		t.Fatalf("Run: %v", err)
+	}
+
+	joined := strings.Join(lines, "\n")
+	if !strings.Contains(joined, "ABCD2345") {
+		t.Fatalf("the user code was never printed: %q", joined)
+	}
+	// The comparison only works if the code appears with the URL, before the
+	// developer switches to the browser — not in the completion summary.
+	urlAt := strings.Index(joined, "/link?")
+	codeAt := strings.Index(joined, "ABCD2345")
+	if urlAt < 0 || codeAt < urlAt {
+		t.Fatalf("code printed before the approval URL: %q", joined)
+	}
+}
+
+func TestRun_OmitsTheUserCodeAgainstAnOlderServer(t *testing.T) {
+	deps := baseDeps(pair.StatusApproved)
+	deps.Start = func(context.Context, string, string) (pair.Started, error) {
+		return pair.Started{State: "p_1", PollToken: "tok"}, nil // pre-#596 server
+	}
+
+	var lines []string
+	deps.Report = func(line string) { lines = append(lines, line) }
+
+	if _, err := Run(context.Background(), "https://stellar-drive-signet.example", "testnet", "src", "GABC", deps); err != nil {
+		t.Fatalf("Run: %v", err)
+	}
+
+	joined := strings.Join(lines, "\n")
+	if strings.Contains(joined, "user_code=") {
+		t.Fatalf("sent an empty user_code the server never issued: %q", joined)
+	}
+	if strings.Contains(joined, "show this code") {
+		t.Fatalf("promised a code the approval page cannot show: %q", joined)
 	}
 }
 
