@@ -17,6 +17,7 @@ const PLATFORM_PACKAGES = {
   'linux-x64': '@stellar-drive-signet/cli-linux-x64',
   'linux-arm64': '@stellar-drive-signet/cli-linux-arm64',
   'darwin-arm64': '@stellar-drive-signet/cli-darwin-arm64',
+  'darwin-x64': '@stellar-drive-signet/cli-darwin-x64',
   'win32-x64': '@stellar-drive-signet/cli-windows-x64',
 };
 

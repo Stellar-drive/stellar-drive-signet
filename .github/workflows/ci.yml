@@ -138,7 +138,7 @@ jobs:
       # nobody's local machine matches (e.g. linux/arm64 built from an amd64
       # dev box) would otherwise stay invisible until it broke on a
       # stranger's machine. No cgo (see go.mod), so each target only needs
-      # GOOS/GOARCH — no per-platform runner or toolchain. The four targets
+      # GOOS/GOARCH — no per-platform runner or toolchain. The targets
       # are the same set release-cli.yml publishes.
       - name: Cross-compile smoke build
         run: |
@@ -147,6 +147,7 @@ jobs:
             "linux   amd64"
             "linux   arm64"
             "darwin  arm64"
+            "darwin  amd64"
             "windows amd64"
           )
           for target in "${targets[@]}"; do

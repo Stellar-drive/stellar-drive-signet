@@ -17,6 +17,7 @@ you don't need is downloaded:
 | `@stellar-drive-signet/cli-linux-x64` | Linux x64 |
 | `@stellar-drive-signet/cli-linux-arm64` | Linux arm64 |
 | `@stellar-drive-signet/cli-darwin-arm64` | macOS (Apple Silicon) |
+| `@stellar-drive-signet/cli-darwin-x64` | macOS (Intel) |
 | `@stellar-drive-signet/cli-windows-x64` | Windows x64 |
 
 Each platform package's version is pinned to exactly match this one — see
