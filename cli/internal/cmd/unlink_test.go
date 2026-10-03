@@ -196,7 +196,7 @@ func TestUnlink_PromptNamesTheHandle(t *testing.T) {
 	if want := "Unlink " + aliceKey + " from @alice? [y/N]"; !strings.Contains(out, want) {
 		t.Fatalf("prompt = %q, want it to contain %q", out, want)
 	}
-	if byPath, _ := log.snapshot(); byPath["/api/auth/sep10"] != 0 {
+	if byPath, _ := log.snapshot(); byPath["/api/cli-link"] != 0 {
 		t.Fatalf("fetched a challenge after the developer said no: %v", byPath)
 	}
 }

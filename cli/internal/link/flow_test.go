@@ -386,11 +386,59 @@ func TestFetchChallenge_RedactsTheServersError(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	_, _, err := FetchChallenge(srv.Client(), srv.URL)(context.Background(), "GABC")
+	_, _, err := FetchChallenge(srv.Client(), srv.URL, "testnet")(context.Background(), "GABC")
 	if !errors.Is(err, exitcode.ErrNetwork) {
 		t.Fatalf("err = %v, want ErrNetwork", err)
 	}
 	if strings.Contains(err.Error(), seed) || !strings.Contains(err.Error(), "challenge refused "+redact.Placeholder) {
 		t.Fatalf("server error was not safely preserved: %v", err)
+	}
+}
+
+func TestFetchChallenge_RequestsTheCLILinkChallengeForTheResolvedNetwork(t *testing.T) {
+	// #597: the challenge must come from /api/cli-link (its own home domain),
+	// not the web sign-in endpoint, and must name the network the command
+	// resolved.
+	var gotPath, gotAccount, gotNetwork, gotMethod string
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotMethod = r.Method
+		gotPath = r.URL.Path
+		gotAccount = r.URL.Query().Get("account")
+		gotNetwork = r.URL.Query().Get("network")
+		_, _ = w.Write([]byte(`{"transaction":"AAAAchallenge","network_passphrase":"` + testPassphrase + `"}`))
+	}))
+	defer server.Close()
+
+	got, passphrase, err := FetchChallenge(server.Client(), server.URL+"/", "mainnet")(context.Background(), "GABC")
+	if err != nil {
+		t.Fatalf("FetchChallenge: %v", err)
+	}
+	if got != "AAAAchallenge" {
+		t.Errorf("challenge = %q, want the transaction from the response", got)
+	}
+	if passphrase != testPassphrase {
+		t.Errorf("passphrase = %q, want the network_passphrase from the response", passphrase)
+	}
+	if gotMethod != http.MethodGet || gotPath != "/api/cli-link" {
+		t.Errorf("request = %s %s, want GET /api/cli-link", gotMethod, gotPath)
+	}
+	if gotAccount != "GABC" {
+		t.Errorf("account = %q, want GABC", gotAccount)
+	}
+	if gotNetwork != "mainnet" {
+		t.Errorf("network = %q, want mainnet", gotNetwork)
+	}
+}
+
+func TestFetchChallenge_SurfacesAServerRefusal(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusBadRequest)
+		_, _ = w.Write([]byte(`{"error":"Network mismatch: the CLI requested \"mainnet\" but this deployment is configured for \"testnet\"."}`))
+	}))
+	defer server.Close()
+
+	_, _, err := FetchChallenge(server.Client(), server.URL, "mainnet")(context.Background(), "GABC")
+	if !errors.Is(err, exitcode.ErrNetwork) || !strings.Contains(err.Error(), "Network mismatch") {
+		t.Fatalf("err = %v, want a network error carrying the server's message", err)
 	}
 }

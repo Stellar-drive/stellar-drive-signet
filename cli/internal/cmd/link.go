@@ -78,7 +78,7 @@ signing goes through the stellar CLI.`,
 				Start:     client.Start,
 				Poll:      client.Poll,
 				Complete:  client.Complete,
-				Challenge: link.FetchChallenge(&http.Client{Timeout: 15 * time.Second}, resolved.BaseURL),
+				Challenge: link.FetchChallenge(&http.Client{Timeout: 15 * time.Second}, resolved.BaseURL, network),
 				Sign: func(unsigned, passphrase string) (string, error) {
 					return keys.SignChallenge(keys.DefaultBinary, source, unsigned, passphrase)
 				},

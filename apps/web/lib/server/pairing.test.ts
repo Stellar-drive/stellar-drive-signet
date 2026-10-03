@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { Keypair, TransactionBuilder, WebAuth } from '@stellar/stellar-sdk';
 import { buildChallenge, getNetworkPassphrase } from '../sep10.ts';
+import { buildCliLinkChallenge } from '../cli-link.ts';
 import { __resetNonceStore } from '../nonce-store.ts';
 import { logger } from '../logger.ts';
 import { PAIRING_EVENTS } from '@stellar-drive-signet/types';
@@ -137,9 +138,9 @@ function fakeStore(): {
   return { store, pairings, wallets };
 }
 
-/** Build and sign a fresh SEP-10 challenge for `client`. */
+/** Build and sign a fresh CLI-link challenge for `client`, as `stellar-drive-signet link` would. */
 function signedChallenge(client: Keypair): string {
-  const challenge = buildChallenge(client.publicKey());
+  const challenge = buildCliLinkChallenge(client.publicKey(), 'testnet');
   const tx = TransactionBuilder.fromXDR(challenge, getNetworkPassphrase());
   tx.sign(client);
   return tx.toEnvelope().toXDR('base64');
@@ -259,10 +260,30 @@ test('completePairing reports bad-challenge for an unsigned challenge', async ()
   const { store, wallets } = fakeStore();
   const state = await approvedPairing(store, wallets);
   const client = Keypair.random();
-  const unsigned = buildChallenge(client.publicKey()); // server-signed only
+  const unsigned = buildCliLinkChallenge(client.publicKey(), 'testnet'); // server-signed only
 
   const result = await completePairing(state, unsigned, store);
   assert.deepEqual(result, { ok: false, reason: 'bad-challenge' });
+});
+
+test('completePairing rejects a signed web sign-in challenge (wrong domain)', async (t) => {
+  __resetNonceStore();
+  t.after(() => __resetNonceStore());
+  const { store, wallets } = fakeStore();
+  const state = await approvedPairing(store, wallets);
+  const client = Keypair.random();
+  const walletsBefore = wallets.size;
+  // Built with the sign-in home domain and correctly signed by the client:
+  // it is a valid sign-in proof, and must be worthless here.
+  const signIn = TransactionBuilder.fromXDR(
+    buildChallenge(client.publicKey()),
+    getNetworkPassphrase(),
+  );
+  signIn.sign(client);
+
+  const result = await completePairing(state, signIn.toEnvelope().toXDR('base64'), store);
+  assert.deepEqual(result, { ok: false, reason: 'bad-challenge' });
+  assert.equal(wallets.size, walletsBefore, 'nothing may be attached');
 });
 
 test('completePairing reports bad-challenge for a challenge signed by the wrong key', async () => {
@@ -270,7 +291,7 @@ test('completePairing reports bad-challenge for a challenge signed by the wrong 
   const state = await approvedPairing(store, wallets);
   const client = Keypair.random();
   const impostor = Keypair.random();
-  const challenge = buildChallenge(client.publicKey());
+  const challenge = buildCliLinkChallenge(client.publicKey(), 'testnet');
   const tx = TransactionBuilder.fromXDR(challenge, getNetworkPassphrase());
   tx.sign(impostor);
 

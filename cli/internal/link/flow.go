@@ -259,13 +259,20 @@ func wait(
 	return got.outcome, got.err
 }
 
-// FetchChallenge asks a deployment for an unsigned SEP-10 challenge for
-// account, with the network_passphrase the deployment sent alongside it —
-// signing needs it, since the passphrase is part of the signed hash. It is the
-// `Challenge` dep in production.
-func FetchChallenge(client *http.Client, baseURL string) func(context.Context, string) (string, string, error) {
+// FetchChallenge asks a deployment for an unsigned CLI-link challenge for
+// account on the named network, with the network_passphrase the deployment sent
+// alongside it — signing needs it, since the passphrase is part of the signed
+// hash. It is the `Challenge` dep in production.
+//
+// The challenge comes from `GET /api/cli-link`, not `/api/auth/sep10`: it has
+// its own home domain, so a signed web sign-in challenge is never accepted
+// where a CLI-link one is expected, and the reverse (#597). `network` is the
+// name the command resolved (`testnet`, `mainnet`); the server refuses one that
+// does not match the deployment.
+func FetchChallenge(client *http.Client, baseURL, network string) func(context.Context, string) (string, string, error) {
 	return func(ctx context.Context, account string) (string, string, error) {
-		target := strings.TrimRight(baseURL, "/") + "/api/auth/sep10?account=" + url.QueryEscape(account)
+		query := url.Values{"account": {account}, "network": {network}}
+		target := strings.TrimRight(baseURL, "/") + "/api/cli-link?" + query.Encode()
 		req, err := http.NewRequestWithContext(ctx, http.MethodGet, target, nil)
 		if err != nil {
 			return "", "", fmt.Errorf("%w: building challenge request: %s", exitcode.ErrNetwork, redact.Secrets(err.Error()))

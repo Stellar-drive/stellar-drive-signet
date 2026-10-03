@@ -72,8 +72,13 @@ stellar-drive-signet link
    before it renders an Approve button at all. Check the code matches: a page
    showing a different one is somebody else's link. Then approve or reject.
    *Proves you own the handle*, via your signed-in session.
-4. **Prove the key.** stellar-drive-signet fetches a SEP-10 challenge for the deploy account
-   and signs it with `stellar tx sign`. *Proves you control the deploy key.*
+4. **Prove the key.** stellar-drive-signet fetches a CLI-link challenge for the deploy account
+   with `GET /api/cli-link?account=<key>&network=<name>` (passing the network the
+   command resolved) and signs it with `stellar tx sign`. *Proves you control
+   the deploy key.* This challenge has its own home domain (`cli.<root domain>`),
+   so a signed web sign-in challenge is refused here and a signed CLI-link
+   challenge is worthless for signing in. The response also carries the
+   deployment's `network_passphrase`.
 5. **Complete.** `POST /api/cli/pair/complete` checks both proofs and writes the
    binding. It refuses if the challenge was signed by any key other than the one
    the browser was shown — so what you approved is what gets linked.
@@ -113,7 +118,9 @@ stellar-drive-signet unlink            # asks first
 stellar-drive-signet unlink --yes      # required when stdin is not a terminal (CI, pipes)
 ```
 
-Unlinking needs only the key proof — no browser step. Attaching a wallet makes
+Unlinking needs only the key proof — no browser step. The proof is the same
+CLI-link challenge `stellar-drive-signet link` uses (`GET /api/cli-link`); a web sign-in
+challenge cannot unlink a wallet. Attaching a wallet makes
 a claim about a profile; detaching withdraws one, and the person holding the key
 is the one whose attestation the profile was showing. Requiring the handle
 owner's consent too would mean a developer who left a team could not stop their
@@ -628,3 +635,12 @@ nothing.
 - [`ENVIRONMENT.md`](ENVIRONMENT.md) — what a deployment needs configured,
   including what degrades without a database.
 - `cli/README.md` — building, testing, and the module layout.
+
+## Challenge endpoint
+
+`GET /api/cli-link?account=<G…>&network=<name>` issues the CLI-link challenge
+used by both `stellar-drive-signet link` and `stellar-drive-signet unlink`. `POST /api/cli-link` (verify
+only; it links nothing) is **deprecated**: nothing in the CLI or the web app
+calls it now that pairing completion and unlink verify the challenge
+themselves. It is kept for callers of released versions and will be removed in a
+future breaking change. Do not build on it.
