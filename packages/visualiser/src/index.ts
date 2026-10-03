@@ -68,6 +68,9 @@ export {
 // Deterministic text metrics (E-05): the layout's only measure of a label.
 export { MIN_TEXT_PX, textCells, textWidth, truncateLabel } from './metrics.ts';
 
+/** Pure SVG renderer (§4.2): DiagramModel -> SVG string. */
+export { renderDiagramSvg, type RenderOptions } from './render.ts';
+
 /** Worth-drawing decision (§3): draw / too-simple / too-large. */
 export {
   type ContractGraph,
