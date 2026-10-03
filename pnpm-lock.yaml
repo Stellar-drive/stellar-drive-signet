@@ -199,6 +199,9 @@ importers:
         specifier: ^16.1.0
         version: 16.1.0
     devDependencies:
+      '@stellar-drive-signet/fixtures':
+        specifier: workspace:*
+        version: link:../fixtures
       ajv:
         specifier: ^8.20.0
         version: 8.20.0
