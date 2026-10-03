@@ -82,6 +82,9 @@ export {
   diagramDecision,
 } from './decide.ts';
 
+/** Pure SVG renderer (§4.2): DiagramModel -> SVG string. */
+export { renderDiagramSvg, type RenderOptions } from './render.ts';
+
 // Theme tokens and CSS variables (§2.3 of docs/CONTRACT_VISUALISER_DESIGN.md)
 export {
   VIZ_CSS_VARIABLES,
