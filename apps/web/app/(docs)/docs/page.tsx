@@ -6,14 +6,26 @@ export const metadata = {
   description: 'How Signet binds Stellar wallets to developer identities, and how to read the data.',
 };
 
-function H({ children }: { children: React.ReactNode }) {
+function H({ id, children }: { id?: string; children: React.ReactNode }) {
   return (
     <h2
+      id={id}
       className="mt-14 text-[11px] uppercase tracking-[0.26em] text-[#8b1a1a]"
       style={{ fontFamily: 'var(--font-mono)' }}
     >
       {children}
     </h2>
+  );
+}
+
+function Sub({ children }: { children: React.ReactNode }) {
+  return (
+    <h3
+      className="mt-8 text-[13px] font-medium text-[#f5f4ee]"
+      style={{ fontFamily: 'var(--font-mono)' }}
+    >
+      {children}
+    </h3>
   );
 }
 
@@ -78,6 +90,94 @@ export default function DocsPage() {
           on-chain operations shown are fetched from the public Stellar Horizon
           API, and each row links to its transaction on Stellar Expert for
           independent verification.
+        </p>
+
+        <H id="reading-a-contract-diagram">Reading a contract diagram</H>
+        <p className="mt-4 text-[14px] leading-[1.7] text-[#b8b5a8]">
+          The contract diagram is a picture of a Soroban contract&#8217;s public
+          interface, drawn from its compiled spec. It is 
+          <strong>not live yet</strong>: the <strong>Diagram</strong> tab on a
+          contract page is a placeholder while the drawing code is built, so
+          this section describes what the diagram is designed to show and how
+          to read it once it ships. The design is in{' '}
+          <code>docs/CONTRACT_VISUALISER_DESIGN.md</code>.
+        </p>
+
+        <Sub>Nodes</Sub>
+        <ul className="mt-3 space-y-2 text-[14px] leading-[1.7] text-[#b8b5a8]">
+          <li>
+            <strong>Function node</strong> — one exported function from the
+            contract spec, labelled with its name and linking to that
+            function&#8217;s entry in the generated docs.
+          </li>
+          <li>
+            <strong>Type node</strong> — a struct, enum or union the spec
+            defines and a function refers to. Types sit in a second column to the
+            right of the functions.
+          </li>
+        </ul>
+        <p className="mt-3 text-[14px] leading-[1.7] text-[#b8b5a8]">
+          Errors and events are not nodes. They are listed below the diagram,
+          because they relate to many functions at once and drawing them as
+          nodes would add lines without adding meaning.
+        </p>
+
+        <Sub>Edges</Sub>
+        <p className="mt-3 text-[14px] leading-[1.7] text-[#b8b5a8]">
+          Every edge is an arrow drawn from the spec alone. An arrow from a
+          function to a type means the type appears in the function&#8217;s
+          arguments or return value; an arrow from one type to another means it
+          appears as a field. Signet does not draw call arrows between
+          contracts yet, and an argument that is merely named{' '}
+          <code>token</code> or <code>pool</code> is never drawn as a
+          relationship.
+        </p>
+
+        <Sub>Groups</Sub>
+        <p className="mt-3 text-[14px] leading-[1.7] text-[#b8b5a8]">
+          Soroban contracts conventionally prefix related functions (for
+          example <code>admin_</code> or <code>pool_</code>). The diagram
+          clusters functions that share a prefix into a <strong>group</strong>,
+          which can collapse so a large contract stays scannable. Grouping is a
+          reading aid based on naming, not something the language enforces.
+        </p>
+
+        <Sub>When there is no diagram</Sub>
+        <p className="mt-3 text-[14px] leading-[1.7] text-[#b8b5a8]">
+          A diagram is only drawn when it adds something. A contract with no
+          spec-derived edges, such as the registry, gets no diagram because the
+          generated docs already say everything it could. A contract with more
+          than about 60 nodes after grouping gets the grouped function list
+          with a note that its surface is too large to diagram usefully. Text
+          never renders smaller than 12px; a wide diagram scrolls inside its
+          own box instead of shrinking.
+        </p>
+
+        <Sub>What the diagram cannot show</Sub>
+        <ul className="mt-3 space-y-2 text-[14px] leading-[1.7] text-[#b8b5a8]">
+          <li>
+            <strong>Mutability</strong> — the Soroban spec does not say whether
+            a function writes state, only that it exists. A function that looks
+            read-only may still mutate storage.
+          </li>
+          <li>
+            <strong>State layout</strong> — the spec describes the interface,
+            not storage keys or what is stored.
+          </li>
+          <li>
+            <strong>Calls to other contracts</strong> — the spec lists what a
+            contract exposes, not what it invokes.
+          </li>
+          <li>
+            <strong>Which function emits which event</strong> — the spec
+            declares events, not who raises them.
+          </li>
+        </ul>
+        <p className="mt-3 text-[14px] leading-[1.7] text-[#b8b5a8]">
+          The design adds a read/write mark and a cross-contract call graph in
+          later phases, from simulation and from Signet&#8217;s indexer. Those
+          are marked as observed rather than declared, and are not available
+          today.
         </p>
 
         <H>Linking your deploy wallet</H>
