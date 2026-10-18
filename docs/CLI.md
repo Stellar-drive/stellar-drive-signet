@@ -182,6 +182,59 @@ deployment URL in a config file:
 Settings resolve highest-priority first: flag → environment → config file →
 built-in default.
 
+## Shell completion
+
+`stellar-drive-signet completion` generates tab-completion scripts for bash, zsh, fish and
+PowerShell. In addition to subcommands and flags, it completes dynamic values:
+
+- `--source` and `--sign-with-key` from the local `stellar` keystore (`stellar keys ls`);
+- `--context`, `context use`, `context show`, and `context remove` from the contexts stored in `config.json`;
+- `--network` (`testnet`, `mainnet`).
+
+### Bash
+
+```bash
+source <(stellar-drive-signet completion bash)
+
+# Load on every shell start (Linux):
+stellar-drive-signet completion bash > ~/.local/share/bash-completion/completions/stellar-drive-signet
+```
+
+### Zsh
+
+```zsh
+source <(stellar-drive-signet completion zsh)
+
+# Or write to a directory on $fpath before compinit runs:
+stellar-drive-signet completion zsh > "${fpath[1]}/_stellar-drive-signet"
+```
+
+### Fish
+
+```fish
+stellar-drive-signet completion fish | source
+
+# Load on every shell start:
+stellar-drive-signet completion fish > ~/.config/fish/completions/stellar-drive-signet.fish
+```
+
+### PowerShell
+
+```powershell
+stellar-drive-signet completion powershell | Out-String | Invoke-Expression
+
+# To persist across sessions, append the output of `stellar-drive-signet completion powershell` to $PROFILE.
+```
+
+### `npx` caveat
+
+Shell completion hooks bind to the `stellar-drive-signet` command on `PATH` and invoke
+`stellar-drive-signet __complete ...` on every Tab press. Running through `npx @stellar-drive-signet/cli`
+does not put a `stellar-drive-signet` binary on `PATH` (and spawning `npx` on each Tab press
+would be too slow for interactive use). Install the CLI globally
+(`npm install -g @stellar-drive-signet/cli`) or place the release binary on `PATH` before
+enabling shell completions.
+
 ## Self-hosted deployments
 
 Point the CLI at your own instance:
