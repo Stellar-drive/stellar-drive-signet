@@ -25,6 +25,7 @@
   "devDependencies": {
     "@stellar-drive-signet/fixtures": "workspace:*",
     "ajv": "^8.20.0",
+    "fast-check": "^4.10.2",
     "typescript": "^5.6.3"
   }
 }
