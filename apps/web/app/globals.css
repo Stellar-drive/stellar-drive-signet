@@ -1,4 +1,5 @@
 @import '@stellar-drive-signet/visualiser/tokens.css';
+@import '@stellar-drive-signet/visualiser/interactive/viewport.css';
 
 @tailwind base;
 @tailwind components;
