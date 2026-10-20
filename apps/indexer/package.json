@@ -16,6 +16,7 @@
   "dependencies": {
     "@stellar-drive-signet/db": "workspace:*",
     "@stellar-drive-signet/types": "workspace:*",
+    "@stellar-drive-signet/visualiser": "workspace:*",
     "@stellar/stellar-sdk": "^16.1.0"
   },
   "devDependencies": {

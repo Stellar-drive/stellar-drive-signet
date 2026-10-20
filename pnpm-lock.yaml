@@ -46,6 +46,9 @@ importers:
       '@stellar-drive-signet/types':
         specifier: workspace:*
         version: link:../../packages/types
+      '@stellar-drive-signet/visualiser':
+        specifier: workspace:*
+        version: link:../../packages/visualiser
       '@stellar/stellar-sdk':
         specifier: ^16.1.0
         version: 16.1.0
@@ -226,10 +229,10 @@ importers:
       '@stellar-drive-signet/spec':
         specifier: workspace:*
         version: link:../spec
-    devDependencies:
       '@stellar/stellar-sdk':
         specifier: ^16.1.0
         version: 16.1.0
+    devDependencies:
       typescript:
         specifier: ^5.6.3
         version: 5.9.3
