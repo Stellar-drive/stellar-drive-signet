@@ -32,7 +32,10 @@
     "db:generate": "pnpm --filter @stellar-drive-signet/db run generate",
     "indexer:dev": "pnpm --filter @stellar-drive-signet/indexer dev",
     "dev:seed": "pnpm --filter @stellar-drive-signet/indexer run dev:seed",
-    "docs:generate": "pnpm --filter @stellar-drive-signet/web run docs:generate"
+    "docs:generate": "pnpm --filter @stellar-drive-signet/web run docs:generate",
+    "openapi:export": "pnpm --filter @stellar-drive-signet/web openapi:export",
+    "openapi:check": "pnpm --filter @stellar-drive-signet/web openapi:check",
+    "openapi:breaking": "node scripts/check-openapi-breaking.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^9.13.0",
