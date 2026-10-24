@@ -3,15 +3,19 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/spf13/cobra"
 
 	"github.com/Stellar-drive/stellar-drive-signet/cli/internal/api"
 	"github.com/Stellar-drive/stellar-drive-signet/cli/internal/config"
 	"github.com/Stellar-drive/stellar-drive-signet/cli/internal/exitcode"
+	"github.com/Stellar-drive/stellar-drive-signet/cli/internal/fork"
 	"github.com/Stellar-drive/stellar-drive-signet/cli/internal/keys"
 	"github.com/Stellar-drive/stellar-drive-signet/cli/internal/output"
 	"github.com/Stellar-drive/stellar-drive-signet/cli/internal/pair"
+	"github.com/Stellar-drive/stellar-drive-signet/cli/internal/rpc"
+	"github.com/Stellar-drive/stellar-drive-signet/cli/internal/simulator"
 )
 
 // Deps is everything a command needs from the outside world, gathered in one
@@ -38,13 +42,30 @@ type Deps struct {
 	// Version and Commit identify this build, for `stellar-drive-signet version`.
 	Version string
 	Commit  string
+
+	// LocateSimulator finds stellar-drive-signet-simulator and reports a version mismatch
+	// through warn (simulator.Find). Only commands that execute contract
+	// code call it.
+	LocateSimulator func(ctx context.Context, cliVersion string, warn func(string)) (string, error)
+	// SimulatorOptions configure every simulator client (tests shorten the
+	// timeout or add environment for a fake).
+	SimulatorOptions []simulator.Option
+	// ForkRoot is where forks are cached (fork.Root).
+	ForkRoot func() (string, error)
+	// RPCOptions configure every Stellar RPC client.
+	RPCOptions []rpc.Option
+	// Now is the clock fork ages are measured against.
+	Now func() time.Time
 }
 
 // defaultDeps is what production runs with.
 func defaultDeps() Deps {
 	return Deps{
-		NewClient:  pair.New,
-		KeysBinary: keys.DefaultBinary,
+		NewClient:       pair.New,
+		KeysBinary:      keys.DefaultBinary,
+		LocateSimulator: simulator.Find,
+		ForkRoot:        fork.Root,
+		Now:             time.Now,
 	}
 }
 
