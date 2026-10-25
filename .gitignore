@@ -48,3 +48,9 @@ ISSUES.md
 
 # stellar-drive-signet dev session logs (#572)
 .stellar-drive-signet/
+
+# The sandbox UI build (#579): pnpm --filter @stellar-drive-signet/sandbox-ui build. The
+# directory itself stays, for go:embed.
+!cli/internal/devui/dist/
+cli/internal/devui/dist/*
+!cli/internal/devui/dist/.gitkeep
