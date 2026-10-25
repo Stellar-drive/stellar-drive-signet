@@ -657,7 +657,7 @@ jobs:
         working-directory: cli
         env:
           SIGNET_SIMULATOR_PATH: ${{ github.workspace }}/sandbox/target/debug/stellar-drive-signet-simulator
-        run: go test -count=1 -run 'SandboxCall' ./internal/cmd
+        run: go test -count=1 -run 'SandboxCall|SandboxForkArchive|SandboxState' ./internal/cmd
 
   simulator-size:
     name: stellar-drive-signet-simulator size budget
