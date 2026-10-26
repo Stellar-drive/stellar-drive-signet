@@ -422,6 +422,10 @@ cache and the session log
   file `stellar-drive-signet sandbox export` writes from a `stellar-drive-signet dev` session
   ([#572](https://github.com/Stellar-drive/stellar-drive-signet/issues/572),
   [`SANDBOX.md`](SANDBOX.md#repro-bundles)).
+- `ci-report` (`ci-report.json`) is not a message either: it is the report
+  `stellar-drive-signet dev --ci --report` writes
+  ([#639](https://github.com/Stellar-drive/stellar-drive-signet/issues/639),
+  [`SANDBOX.md`](SANDBOX.md#stellar-drive-signet-dev---ci)).
 - `cli-call-result` (`cli-call-result.json`) is not a wire message: it is the object `stellar-drive-signet sandbox call --json`
   writes ([#555](https://github.com/Stellar-drive/stellar-drive-signet/issues/555)), kept beside the
   messages it is built from.
