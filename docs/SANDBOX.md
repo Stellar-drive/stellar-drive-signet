@@ -382,6 +382,29 @@ stellar-drive-signet dev --ci --report report.json --junit junit.xml --fail-on b
   (`stellar-drive-signet sandbox export`, [Repro bundles](#repro-bundles)), with fetching
   denied.
 
+### In a contract's own CI
+
+[`docs/examples/stellar-drive-signet-dev-ci.yml`](examples/stellar-drive-signet-dev-ci.yml) is a
+workflow to copy into a contract's repository: it installs Rust with
+`wasm32v1-none`, `stellar` 25.2.0 and `@stellar-drive-signet/cli` (which carries
+`stellar-drive-signet-simulator`), caches `~/.cache/stellar-drive-signet` and `target`, runs
+`stellar-drive-signet dev --ci --bundle .stellar-drive-signet/regression.json --junit junit.xml` and
+publishes the JUnit report as a check.
+
+There are two ways to run it:
+
+- **Bundle-based (recommended).** Record the calls once from a session
+  (`stellar-drive-signet dev`, then `stellar-drive-signet sandbox export -o .stellar-drive-signet/regression.json`) and
+  commit the bundle. Every run replays the same state and calls offline, so
+  the check is deterministic: a failure is the change, not the network.
+  Re-export when the deployment or the calls you care about change.
+- **Live.** Drop `--bundle`: each run forks the deployed contract on the
+  network and replays its saved calls and its latest real transactions. That
+  catches traffic the bundle has never seen, but the result moves with the
+  chain, an RPC outage fails the run (exit 6 or 7), and a real transaction
+  whose state has moved on is only low-fidelity. Run it on a schedule, or as
+  a non-required check, beside the bundle-based one.
+
 ## Protocol support
 
 A Soroban host only runs at its own ledger protocol, so `stellar-drive-signet-simulator`

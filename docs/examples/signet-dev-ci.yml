@@ -1,0 +1,65 @@
+# stellar-drive-signet dev --ci as a pull request check (#640): copy this file into your
+# contract's repository as .github/workflows/stellar-drive-signet-dev-ci.yml.
+#
+# It builds the contract and replays the calls of a repro bundle on the
+# deployed code and on the new build, offline: the same result on every run.
+# Record the bundle once from a stellar-drive-signet dev session and commit it:
+#
+#   stellar-drive-signet dev            # with your saved calls in stellar-drive-signet.dev.toml
+#   stellar-drive-signet sandbox export -o .stellar-drive-signet/regression.json
+#
+# See docs/SANDBOX.md, "stellar-drive-signet dev --ci", for exit codes and --fail-on.
+name: stellar-drive-signet dev
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  checks: write # the JUnit report's check run
+
+jobs:
+  regression:
+    name: contract regression check
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      STELLAR_CLI_VERSION: 25.2.0
+      SIGNET_CLI_VERSION: latest # pin a version for runs you can reproduce
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32v1-none
+
+      - name: Install stellar
+        run: |
+          curl -sSfL "https://github.com/stellar/stellar-cli/releases/download/v${STELLAR_CLI_VERSION}/stellar-cli-${STELLAR_CLI_VERSION}-x86_64-unknown-linux-gnu.tar.gz" \
+            | tar -xz -C "$RUNNER_TEMP" stellar
+          echo "$RUNNER_TEMP" >> "$GITHUB_PATH"
+
+      # @stellar-drive-signet/cli carries stellar-drive-signet-simulator for this platform.
+      - name: Install stellar-drive-signet
+        run: npm install --global "@stellar-drive-signet/cli@${SIGNET_CLI_VERSION}"
+
+      - name: Cache the build and stellar-drive-signet's forks
+        uses: actions/cache@v6
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cache/stellar-drive-signet
+            target
+          key: stellar-drive-signet-dev-${{ runner.os }}-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: stellar-drive-signet dev --ci
+        run: stellar-drive-signet dev --ci --bundle .stellar-drive-signet/regression.json --junit junit.xml
+
+      - name: Publish the JUnit report
+        if: always()
+        uses: mikepenz/action-junit-report@v5
+        with:
+          report_paths: junit.xml
+          check_name: stellar-drive-signet dev
