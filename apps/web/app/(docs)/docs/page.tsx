@@ -251,6 +251,7 @@ export default function DocsPage() {
           terminal:
         </p>
         <pre
+          tabIndex={0}
           className="mt-4 overflow-x-auto border border-[#1f1d19] bg-[#0e0d0b] px-5 py-4 text-[12px] leading-[1.7] text-[#b8b5a8]"
           style={{ fontFamily: 'var(--font-mono)' }}
         >
@@ -274,6 +275,7 @@ export default function DocsPage() {
           then reports what differs. Nothing runs on Signet&apos;s servers.
         </p>
         <pre
+          tabIndex={0}
           className="mt-4 overflow-x-auto border border-[#1f1d19] bg-[#0e0d0b] px-5 py-4 text-[12px] leading-[1.7] text-[#b8b5a8]"
           style={{ fontFamily: 'var(--font-mono)' }}
         >
@@ -294,13 +296,14 @@ stellar-drive-signet dev CASFJHI5PQSRWS7JV25CF7FOMRKIVBP3RXRP3E2GH2CV4BCAG7FUJRC
         <H id="api">API and SDK</H>
         <p className="mt-4 text-[14px] leading-[1.7] text-[#b8b5a8]">
           The public, read-only API is documented in the{' '}
-          <Link href="/docs/api" className="text-[var(--text-accent)] underline-offset-4 hover:underline">
+          <Link href="/docs/api" className="text-[var(--text-accent)] underline underline-offset-4">
             API reference
           </Link>
           : every endpoint, its parameters and responses, with examples.
           Every endpoint is a plain GET; no key is needed:
         </p>
         <pre
+          tabIndex={0}
           className="mt-4 overflow-x-auto border border-[#1f1d19] bg-[#0e0d0b] px-5 py-4 text-[12px] leading-[1.7] text-[#b8b5a8]"
           style={{ fontFamily: 'var(--font-mono)' }}
         >
@@ -312,6 +315,7 @@ stellar-drive-signet dev CASFJHI5PQSRWS7JV25CF7FOMRKIVBP3RXRP3E2GH2CV4BCAG7FUJRC
           Integrators can also read it through <code>@stellar-drive-signet/sdk</code>:
         </p>
         <pre
+          tabIndex={0}
           className="mt-4 overflow-x-auto border border-[#1f1d19] bg-[#0e0d0b] px-5 py-4 text-[12px] leading-[1.7] text-[#b8b5a8]"
           style={{ fontFamily: 'var(--font-mono)' }}
         >
