@@ -3,6 +3,10 @@
 `stellar-drive-signet` binds the wallet you deploy contracts from to your Signet handle, so
 the contracts that wallet has deployed are attributed to you.
 
+The contract sandbox, which runs deployed contracts locally and checks a new
+build against them (`stellar-drive-signet sandbox`, `stellar-drive-signet dev`), is documented separately
+in [`SANDBOX.md`](SANDBOX.md).
+
 That binding is the thing the whole product rests on, so the CLI is deliberately
 careful about what it proves and what it never touches. Two facts to hold onto
 while reading the rest:
